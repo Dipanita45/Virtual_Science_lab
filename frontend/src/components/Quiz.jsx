@@ -94,11 +94,11 @@ const Quiz = ({ experimentId, subject }) => {
               Test Your Understanding!
             </h3>
             <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto text-sm">
-              Complete a quick 3-question quiz on this experiment to earn **+50 XP** and work towards subject Badges!
+              Complete a quick {questions.length}-question quiz on this experiment to earn **+50 XP** and work towards subject Badges!
             </p>
             {previousHighScore !== -1 && (
               <div className="mt-3 text-xs bg-slate-100 dark:bg-slate-800 py-1.5 px-3 rounded-full inline-block font-medium text-slate-600 dark:text-slate-300">
-                ⭐ Best Score: {previousHighScore}/3
+                ⭐ Best Score: {previousHighScore}/{questions.length}
               </div>
             )}
             <button
@@ -185,7 +185,7 @@ const Quiz = ({ experimentId, subject }) => {
               <p className="text-slate-400 dark:text-slate-500 font-medium text-xs mt-2 uppercase tracking-wider">
                 {correctAnswers === questions.length
                   ? "Perfect Score! 🌟"
-                  : correctAnswers >= 2
+                  : correctAnswers >= Math.ceil(questions.length / 2)
                   ? "Great job! 👍"
                   : "Keep studying! 📚"}
               </p>

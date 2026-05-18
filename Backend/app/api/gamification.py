@@ -12,8 +12,8 @@ router = APIRouter(prefix="/api/gamification", tags=["gamification"])
 class QuizCompletionRequest(BaseModel):
     user_id: str = Field(default="default-student", description="The identifier of the student")
     experiment_id: str = Field(..., description="ID of the completed experiment")
-    score: int = Field(..., ge=0, le=3, description="Score achieved (0-3)")
-    total_questions: int = Field(default=3, description="Total questions in the quiz")
+    score: int = Field(..., ge=0, le=5, description="Score achieved (0-5)")
+    total_questions: int = Field(default=5, description="Total questions in the quiz")
     subject: str = Field(..., description="Subject of the experiment (biology, chemistry, physics)")
 
 class ProgressResponse(BaseModel):

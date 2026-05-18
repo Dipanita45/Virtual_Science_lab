@@ -135,27 +135,27 @@ def complete_quiz(user_id: str, experiment_id: str, score: int, total_questions:
         unlocked = False
         
         if badge["type"] == "any_perfect":
-            # Check if any quiz in this subject has 3/3
+            # Check if any quiz in this subject has 5/5
             subject_exps = EXPERIMENTS_BY_SUBJECT[badge["subject"]]
             for exp in subject_exps:
-                if completed_quizzes.get(exp, 0) == 3: # 3 is perfect score
+                if completed_quizzes.get(exp, 0) == 5: # 5 is perfect score
                     unlocked = True
                     break
         elif badge["type"] == "all_perfect":
-            # Check if ALL quizzes in this subject have 3/3
+            # Check if ALL quizzes in this subject have 5/5
             subject_exps = EXPERIMENTS_BY_SUBJECT[badge["subject"]]
             all_perfect = True
             for exp in subject_exps:
-                if completed_quizzes.get(exp, 0) != 3:
+                if completed_quizzes.get(exp, 0) != 5:
                     all_perfect = False
                     break
             if all_perfect:
                 unlocked = True
         elif badge["type"] == "grand_perfect":
-            # Check if ALL experiments in the app have 3/3
+            # Check if ALL experiments in the app have 5/5
             grand_perfect = True
             for exp in ALL_EXPERIMENTS:
-                if completed_quizzes.get(exp, 0) != 3:
+                if completed_quizzes.get(exp, 0) != 5:
                     grand_perfect = False
                     break
             if grand_perfect:

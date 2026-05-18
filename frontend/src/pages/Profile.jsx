@@ -6,7 +6,7 @@ const BADGES_CONFIG = [
   {
     id: "Junior Biologist",
     title: "Junior Biologist",
-    description: "Score 100% (3/3) on at least one Biology experiment quiz.",
+    description: "Score 100% (5/5) on at least one Biology experiment quiz.",
     emoji: "🔬",
     subject: "Biology",
     color: "from-green-400 to-emerald-600 shadow-emerald-500/20 text-emerald-100"
@@ -14,7 +14,7 @@ const BADGES_CONFIG = [
   {
     id: "Biology Pro",
     title: "Biology Pro",
-    description: "Complete all 4 Biology quizzes with a perfect score (3/3).",
+    description: "Complete all 4 Biology quizzes with a perfect score (5/5).",
     emoji: "🧬",
     subject: "Biology",
     color: "from-emerald-500 to-teal-700 shadow-teal-500/20 text-teal-100"
@@ -22,7 +22,7 @@ const BADGES_CONFIG = [
   {
     id: "Junior Chemist",
     title: "Junior Chemist",
-    description: "Score 100% (3/3) on at least one Chemistry experiment quiz.",
+    description: "Score 100% (5/5) on at least one Chemistry experiment quiz.",
     emoji: "🧪",
     subject: "Chemistry",
     color: "from-blue-400 to-indigo-600 shadow-blue-500/20 text-blue-100"
@@ -30,7 +30,7 @@ const BADGES_CONFIG = [
   {
     id: "Chemistry Pro",
     title: "Chemistry Pro",
-    description: "Complete all 3 Chemistry quizzes with a perfect score (3/3).",
+    description: "Complete all 3 Chemistry quizzes with a perfect score (5/5).",
     emoji: "⚗️",
     subject: "Chemistry",
     color: "from-purple-500 to-violet-700 shadow-violet-500/20 text-violet-100"
@@ -38,7 +38,7 @@ const BADGES_CONFIG = [
   {
     id: "Junior Physicist",
     title: "Junior Physicist",
-    description: "Score 100% (3/3) on at least one Physics experiment quiz.",
+    description: "Score 100% (5/5) on at least one Physics experiment quiz.",
     emoji: "🧲",
     subject: "Physics",
     color: "from-amber-400 to-orange-600 shadow-orange-500/20 text-orange-100"
@@ -46,7 +46,7 @@ const BADGES_CONFIG = [
   {
     id: "Physics Pro",
     title: "Physics Pro",
-    description: "Complete all 4 Physics quizzes with a perfect score (3/3).",
+    description: "Complete all 4 Physics quizzes with a perfect score (5/5).",
     emoji: "⚛️",
     subject: "Physics",
     color: "from-red-500 to-pink-700 shadow-pink-500/20 text-pink-100"
@@ -262,11 +262,11 @@ const Profile = () => {
                     <div className="text-right">
                       {isCompleted ? (
                         <div className={`text-xs font-black px-2 py-0.5 rounded-full ${
-                          score === 3
+                          score === 5
                             ? "bg-emerald-500/10 text-emerald-500"
                             : "bg-amber-500/10 text-amber-500"
                         }`}>
-                          {score}/3 ⭐
+                          {score}/5 ⭐
                         </div>
                       ) : (
                         <div className="text-[10px] text-violet-500 dark:text-violet-400 font-bold hover:underline">
