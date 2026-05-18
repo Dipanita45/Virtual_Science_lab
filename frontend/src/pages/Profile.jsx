@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useGamification } from "../context/GamificationContext";
 import { Link } from "react-router-dom";
 import BackButton from "../components/BackButton";
@@ -106,6 +107,115 @@ const Profile = () => {
     const currentInRange = xp - rank.prevXp;
     progressPercent = Math.min(Math.max((currentInRange / range) * 100, 0), 100);
   }
+  
+  const [activeTab, setActiveTab] = useState("achievements");
+
+  // Group experiments by subject
+  const subjectsMap = {
+    Biology: ["human-body", "mitochondria", "eye", "kidney"],
+    Chemistry: ["chemistry-equipment", "volcano-experiment", "condenser"],
+    Physics: ["velocity-acceleration", "magnetic-field-wires", "thumb-rule", "magnetic-field-direction"]
+  };
+
+  // Calculate score average percentage for each subject
+  const getSubjectStats = () => {
+    let stats = {
+      Biology: { sum: 0, count: 0 },
+      Chemistry: { sum: 0, count: 0 },
+      Physics: { sum: 0, count: 0 }
+    };
+
+    // Populate actual quiz scores
+    Object.entries(completedQuizzes).forEach(([expId, score]) => {
+      let foundSubject = null;
+      Object.entries(subjectsMap).forEach(([subj, exps]) => {
+        if (exps.includes(expId)) {
+          foundSubject = subj;
+        }
+      });
+
+      if (foundSubject) {
+        stats[foundSubject].sum += score;
+        stats[foundSubject].count += 1;
+      }
+    });
+
+    const getAvgPercent = (subj) => {
+      const s = stats[subj];
+      if (s.count === 0) return 0;
+      return Math.round((s.sum / (s.count * 5)) * 100);
+    };
+
+    const bioPercent = getAvgPercent("Biology");
+    const chemPercent = getAvgPercent("Chemistry");
+    const physPercent = getAvgPercent("Physics");
+
+    // Diligence score = percentage of all 11 experiments completed
+    const completedCount = Object.keys(completedQuizzes).length;
+    const diligencePercent = Math.round((completedCount / 11) * 100);
+
+    return {
+      scores: {
+        Biology: bioPercent,
+        Chemistry: chemPercent,
+        Physics: physPercent,
+        Diligence: diligencePercent
+      },
+      counts: {
+        Biology: stats["Biology"].count,
+        Chemistry: stats["Chemistry"].count,
+        Physics: stats["Physics"].count
+      }
+    };
+  };
+
+  const subjectAnalytics = getSubjectStats();
+  const scores = subjectAnalytics.scores;
+
+  // Calculate overall performance stats
+  const overallAverage = Math.round(
+    (scores.Biology + scores.Chemistry + scores.Physics) / 3
+  );
+
+  // Determine Strongest and Weakest subjects
+  const subjectsList = [
+    { name: "Biology", score: scores.Biology, count: subjectAnalytics.counts.Biology },
+    { name: "Chemistry", score: scores.Chemistry, count: subjectAnalytics.counts.Chemistry },
+    { name: "Physics", score: scores.Physics, count: subjectAnalytics.counts.Physics }
+  ];
+
+  // Sort: highest score first
+  subjectsList.sort((a, b) => b.score - a.score || b.count - a.count);
+
+  const strongestSubject = subjectsList[0];
+  const weakestSubject = subjectsList[subjectsList.length - 1];
+
+  // Dynamic Suggested Experiments
+  const getSuggestions = () => {
+    let suggestions = [];
+    const orderedSubjects = [weakestSubject.name, "Chemistry", "Biology", "Physics"].filter((v, i, a) => a.indexOf(v) === i);
+    
+    for (const subj of orderedSubjects) {
+      const exps = subjectsMap[subj];
+      for (const expId of exps) {
+        const score = completedQuizzes[expId];
+        if (score === undefined || score < 5) {
+          const originalExp = EXPERIMENTS_ROADMAP.find(e => e.id === expId);
+          if (originalExp) {
+            suggestions.push({
+              ...originalExp,
+              reason: score === undefined ? "Not attempted yet" : `Improve Score (${score}/5)`
+            });
+          }
+        }
+        if (suggestions.length >= 3) break;
+      }
+      if (suggestions.length >= 3) break;
+    }
+    return suggestions;
+  };
+
+  const suggestedFocus = getSuggestions();
 
   return (
     <div className="fade-in max-w-6xl mx-auto px-4 py-8 bg-transparent min-h-screen">
@@ -158,143 +268,470 @@ const Profile = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* 2. BADGES SHOWCASE SECTION (2/3 width on desktop) */}
-        <div className="lg:col-span-2">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 h-full">
-            <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-6 flex items-center gap-2">
-              🏆 Subject & Comprehension Badges ({unlockedBadges.length} / {BADGES_CONFIG.length})
-            </h3>
-            
-            {/* Gained all badges congratulations card */}
-            {unlockedBadges.length === BADGES_CONFIG.length && (
-              <div className="bg-gradient-to-r from-yellow-500/15 via-amber-500/20 to-yellow-500/15 dark:from-yellow-500/5 dark:via-amber-500/10 dark:to-yellow-500/5 border border-amber-500/30 dark:border-amber-500/20 rounded-xl p-5 mb-6 text-center shadow-md relative overflow-hidden animate-pulse">
-                <span className="text-4xl mb-2 block">👑</span>
-                <h4 className="font-extrabold text-amber-700 dark:text-amber-400 text-base">
-                  Master Scientist Status Gained!
-                </h4>
-                <p className="text-slate-600 dark:text-slate-300 text-xs mt-1.5 leading-relaxed max-w-lg mx-auto">
-                  Outstanding achievement! You have successfully unlocked all <strong>{BADGES_CONFIG.length} badges</strong> across all science experiments. You have demonstrated perfect conceptual understanding and experimental precision! 🎓🔬✨
-                </p>
-              </div>
-            )}
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {BADGES_CONFIG.map((badge) => {
-                const isUnlocked = unlockedBadges.includes(badge.id);
-                return (
-                  <div
-                    key={badge.id}
-                    className={`relative overflow-hidden rounded-xl border p-4 flex gap-4 transition-all duration-300 ${
-                      isUnlocked
-                        ? `bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800/80 shadow-sm hover:scale-[1.02]`
-                        : "bg-slate-100/50 dark:bg-slate-900/10 border-slate-200/50 dark:border-slate-900/40 opacity-40 grayscale"
-                    }`}
-                  >
-                    {/* Badge Emoji container */}
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br flex items-center justify-center text-3xl shadow-md shrink-0 ${
-                      isUnlocked ? badge.color : "from-slate-300 to-slate-400 text-slate-100 dark:from-slate-700 dark:to-slate-800"
-                    }`}>
-                      {badge.emoji}
-                    </div>
+      {/* Sleek Modern Dashboard Navigation Tabs */}
+      <div className="flex border-b border-slate-200 dark:border-slate-800 mb-8 gap-6">
+        <button
+          onClick={() => setActiveTab("achievements")}
+          className={`pb-4 text-sm font-black transition-all duration-300 relative ${
+            activeTab === "achievements"
+              ? "text-blue-600 dark:text-blue-400"
+              : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-400"
+          }`}
+        >
+          🏆 Achievements & Badges
+          {activeTab === "achievements" && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse" />
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab("analytics")}
+          className={`pb-4 text-sm font-black transition-all duration-300 relative flex items-center gap-1.5 ${
+            activeTab === "analytics"
+              ? "text-blue-600 dark:text-blue-400"
+              : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-400"
+          }`}
+        >
+          📊 Performance Analytics
+          <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[8px] px-1.5 py-0.5 rounded font-black uppercase animate-pulse">
+            New
+          </span>
+          {activeTab === "analytics" && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse" />
+          )}
+        </button>
+      </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-extrabold text-sm text-slate-800 dark:text-slate-100 truncate">
-                          {badge.title}
-                        </h4>
-                        {isUnlocked ? (
-                          <span className="text-[9px] font-black tracking-wide uppercase bg-emerald-500/10 text-emerald-500 py-0.5 px-2 rounded-full border border-emerald-500/10">
-                            Active
+      {activeTab === "achievements" ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* BADGES SHOWCASE SECTION (2/3 width on desktop) */}
+          <div className="lg:col-span-2">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 h-full">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-6 flex items-center gap-2">
+                🏆 Subject & Comprehension Badges ({unlockedBadges.length} / {BADGES_CONFIG.length})
+              </h3>
+              
+              {/* Gained all badges congratulations card */}
+              {unlockedBadges.length === BADGES_CONFIG.length && (
+                <div className="bg-gradient-to-r from-yellow-500/15 via-amber-500/20 to-yellow-500/15 dark:from-yellow-500/5 dark:via-amber-500/10 dark:to-yellow-500/5 border border-amber-500/30 dark:border-amber-500/20 rounded-xl p-5 mb-6 text-center shadow-md relative overflow-hidden animate-pulse">
+                  <span className="text-4xl mb-2 block">👑</span>
+                  <h4 className="font-extrabold text-amber-700 dark:text-amber-400 text-base">
+                    Master Scientist Status Gained!
+                  </h4>
+                  <p className="text-slate-600 dark:text-slate-300 text-xs mt-1.5 leading-relaxed max-w-lg mx-auto">
+                    Outstanding achievement! You have successfully unlocked all <strong>{BADGES_CONFIG.length} badges</strong> across all science experiments. You have demonstrated perfect conceptual understanding and experimental precision! 🎓🔬✨
+                  </p>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {BADGES_CONFIG.map((badge) => {
+                  const isUnlocked = unlockedBadges.includes(badge.id);
+                  return (
+                    <div
+                      key={badge.id}
+                      className={`relative overflow-hidden rounded-xl border p-4 flex gap-4 transition-all duration-300 ${
+                        isUnlocked
+                          ? `bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800/80 shadow-sm hover:scale-[1.02]`
+                          : "bg-slate-100/50 dark:bg-slate-900/10 border-slate-200/50 dark:border-slate-900/40 opacity-40 grayscale"
+                      }`}
+                    >
+                      {/* Badge Emoji container */}
+                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br flex items-center justify-center text-3xl shadow-md shrink-0 ${
+                        isUnlocked ? badge.color : "from-slate-300 to-slate-400 text-slate-100 dark:from-slate-700 dark:to-slate-800"
+                      }`}>
+                        {badge.emoji}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-extrabold text-sm text-slate-800 dark:text-slate-100 truncate">
+                            {badge.title}
+                          </h4>
+                          {isUnlocked ? (
+                            <span className="text-[9px] font-black tracking-wide uppercase bg-emerald-500/10 text-emerald-500 py-0.5 px-2 rounded-full border border-emerald-500/10">
+                              Active
+                            </span>
+                          ) : (
+                            <span className="text-[9px] font-black tracking-wide uppercase bg-slate-300 text-slate-600 dark:bg-slate-800 dark:text-slate-400 py-0.5 px-2 rounded-full">
+                              Locked
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase mt-1">
+                          {badge.subject} Suite
+                        </p>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs mt-1.5 leading-snug">
+                          {badge.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* EXPERIMENT LAB CHECKLIST (1/3 width on desktop) */}
+          <div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 h-full">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-6 flex items-center gap-2">
+                🧪 Lab Roadmap
+              </h3>
+              
+              <p className="text-slate-400 text-xs font-bold mb-4 uppercase tracking-wider">
+                Experiments Checklist
+              </p>
+
+              <div className="flex flex-col gap-3 max-h-[420px] overflow-y-auto pr-1">
+                {EXPERIMENTS_ROADMAP.map((exp) => {
+                  const score = completedQuizzes[exp.id];
+                  const isCompleted = score !== undefined;
+                  
+                  return (
+                    <Link
+                      key={exp.id}
+                      to={exp.link}
+                      className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-200 text-left hover:scale-[1.01] hover:shadow-md ${
+                        isCompleted
+                          ? "bg-slate-50/60 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800/50"
+                          : "bg-white dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 hover:border-violet-500 dark:hover:border-violet-500"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
+                          isCompleted
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+                        }`}>
+                          {isCompleted ? "✓" : "○"}
+                        </div>
+                        <div>
+                          <h4 className="font-extrabold text-xs text-slate-700 dark:text-slate-200">
+                            {exp.title}
+                          </h4>
+                          <span className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500">
+                            {exp.subject}
                           </span>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        {isCompleted ? (
+                          <div className={`text-xs font-black px-2 py-0.5 rounded-full ${
+                            score === 5
+                              ? "bg-emerald-500/10 text-emerald-500"
+                              : "bg-amber-500/10 text-amber-500"
+                          }`}>
+                            {score}/5 ⭐
+                          </div>
                         ) : (
-                          <span className="text-[9px] font-black tracking-wide uppercase bg-slate-300 text-slate-600 dark:bg-slate-800 dark:text-slate-400 py-0.5 px-2 rounded-full">
-                            Locked
-                          </span>
+                          <div className="text-[10px] text-violet-500 dark:text-violet-400 font-bold hover:underline">
+                            Start →
+                          </div>
                         )}
                       </div>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase mt-1">
-                        {badge.subject} Suite
-                      </p>
-                      <p className="text-slate-500 dark:text-slate-400 text-xs mt-1.5 leading-snug">
-                        {badge.description}
-                      </p>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* PERFORMANCE ANALYTICS TAB CONTENT */
+        <div className="space-y-8 text-left">
+          {/* Summary Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Overall Score Card */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+                Overall score
+              </p>
+              <h4 className="text-3xl font-black mt-2 text-slate-800 dark:text-slate-100 flex items-baseline gap-1">
+                {overallAverage === 0 ? "0%" : `${overallAverage}%`}
+                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  Average
+                </span>
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                across all subjects
+              </p>
+            </div>
+
+            {/* Strongest Subject Card */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+                Strongest subject
+              </p>
+              <h4 className="text-3xl font-black mt-2 text-emerald-600 dark:text-emerald-400 flex items-baseline gap-2">
+                {strongestSubject.score === 0 ? "N/A" : strongestSubject.name}
+                {strongestSubject.score > 0 && (
+                  <span className="text-xs font-black text-emerald-500/80 uppercase">
+                    {strongestSubject.score}/100
+                  </span>
+                )}
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                Highest performance index
+              </p>
+            </div>
+
+            {/* Needs Work Card */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+                Needs work
+              </p>
+              <h4 className="text-3xl font-black mt-2 text-amber-600 dark:text-amber-400 flex items-baseline gap-2">
+                {weakestSubject.score === 0 ? "All Subjects" : weakestSubject.name}
+                {weakestSubject.score > 0 && (
+                  <span className="text-xs font-black text-amber-500/80 uppercase">
+                    {weakestSubject.score}/100
+                  </span>
+                )}
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                Lowest performance index
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* RADAR CHART AND SUGGESTED FOCUS (2/3 width) */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Radar Chart Card */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <div>
+                    <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
+                      📊 Personal Performance Dashboard
+                    </h3>
+                    <p className="text-slate-400 text-xs font-medium mt-1">
+                      Multi-dimensional evaluation of your conceptual strength.
+                    </p>
+                  </div>
+
+                  {/* Legends */}
+                  <div className="flex gap-4 text-[10px] font-black uppercase">
+                    <div className="flex items-center gap-1.5 text-indigo-500">
+                      <span className="inline-block w-2.5 h-2.5 rounded bg-indigo-500" />
+                      This Student
+                    </div>
+                    <div className="flex items-center gap-1.5 text-slate-400">
+                      <span className="inline-block w-2.5 h-2.5 rounded border border-dashed border-slate-400 dark:border-slate-600" />
+                      Class Average
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+                </div>
 
-        {/* 3. EXPERIMENT LAB CHECKLIST (1/3 width on desktop) */}
-        <div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 h-full">
-            <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-6 flex items-center gap-2">
-              🧪 Lab Roadmap
-            </h3>
-            
-            <p className="text-slate-400 text-xs font-bold mb-4 uppercase tracking-wider">
-              Experiments Checklist
-            </p>
-
-            <div className="flex flex-col gap-3 max-h-[420px] overflow-y-auto pr-1">
-              {EXPERIMENTS_ROADMAP.map((exp) => {
-                const score = completedQuizzes[exp.id];
-                const isCompleted = score !== undefined;
-                
-                return (
-                  <Link
-                    key={exp.id}
-                    to={exp.link}
-                    className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-200 text-left hover:scale-[1.01] hover:shadow-md ${
-                      isCompleted
-                        ? "bg-slate-50/60 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800/50"
-                        : "bg-white dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 hover:border-violet-500 dark:hover:border-violet-500"
-                    }`}
+                <div className="flex justify-center py-4">
+                  {/* Radar Chart SVG */}
+                  <svg
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 320 320"
+                    className="max-w-[280px] sm:max-w-[320px] overflow-visible text-slate-700 dark:text-slate-200"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
-                        isCompleted
-                          ? "bg-emerald-500/10 text-emerald-500"
-                          : "bg-slate-100 text-slate-400 dark:bg-slate-800"
-                      }`}>
-                        {isCompleted ? "✓" : "○"}
-                      </div>
-                      <div>
-                        <h4 className="font-extrabold text-xs text-slate-700 dark:text-slate-200">
-                          {exp.title}
-                        </h4>
-                        <span className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500">
-                          {exp.subject}
-                        </span>
-                      </div>
-                    </div>
+                    <defs>
+                      <radialGradient id="radarGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#818cf8" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="#6366f1" stopOpacity="0.02" />
+                      </radialGradient>
+                    </defs>
 
-                    <div className="text-right">
-                      {isCompleted ? (
-                        <div className={`text-xs font-black px-2 py-0.5 rounded-full ${
-                          score === 5
-                            ? "bg-emerald-500/10 text-emerald-500"
-                            : "bg-amber-500/10 text-amber-500"
-                        }`}>
-                          {score}/5 ⭐
+                    {/* Radial grid benchmarks at 25%, 50%, 75%, 100% */}
+                    {[0.25, 0.50, 0.75, 1.0].map((scale) => {
+                      const gridR = 100 * scale;
+                      return (
+                        <polygon
+                          key={scale}
+                          points={`160,${160 - gridR} ${160 + gridR},160 160,${160 + gridR} ${160 - gridR},160`}
+                          fill="none"
+                          stroke="currentColor"
+                          className="text-slate-200 dark:text-slate-800/80"
+                          strokeWidth="1"
+                          strokeDasharray={scale === 1 ? "none" : "3 3"}
+                        />
+                      );
+                    })}
+
+                    {/* Concentric grid labels */}
+                    <text x="164" y={160 - 100 * 0.25 + 3} className="fill-slate-400 dark:fill-slate-500 font-bold text-[8px] select-none pointer-events-none">25%</text>
+                    <text x="164" y={160 - 100 * 0.50 + 3} className="fill-slate-400 dark:fill-slate-500 font-bold text-[8px] select-none pointer-events-none">50%</text>
+                    <text x="164" y={160 - 100 * 0.75 + 3} className="fill-slate-400 dark:fill-slate-500 font-bold text-[8px] select-none pointer-events-none">75%</text>
+                    <text x="164" y={160 - 100 * 1.0 + 3} className="fill-slate-400 dark:fill-slate-500 font-bold text-[8px] select-none pointer-events-none">100%</text>
+
+                    {/* Horizontal & Vertical grid axes lines */}
+                    <line x1="160" y1="60" x2="160" y2="260" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1" />
+                    <line x1="60" y1="160" x2="260" y2="160" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1" />
+
+                    {/* AXIS LABELS */}
+                    <text x="160" y="44" textAnchor="middle" className="font-extrabold text-[10px] fill-slate-700 dark:fill-slate-200">Biology</text>
+                    <text x="268" y="163" textAnchor="start" className="font-extrabold text-[10px] fill-slate-700 dark:fill-slate-200">Chemistry</text>
+                    <text x="160" y="278" textAnchor="middle" className="font-extrabold text-[10px] fill-slate-700 dark:fill-slate-200">Physics</text>
+                    <text x="52" y="163" textAnchor="end" className="font-extrabold text-[10px] fill-slate-700 dark:fill-slate-200">Lab Skills</text>
+
+                    {/* Class Benchmark Polygon (Dashed gray outline) */}
+                    {(() => {
+                      const cBio = { x: 160, y: 160 - 100 * 0.75 };
+                      const cChem = { x: 160 + 100 * 0.70, y: 160 };
+                      const cPhys = { x: 160, y: 160 + 100 * 0.60 };
+                      const cDil = { x: 160 - 100 * 0.50, y: 160 };
+                      return (
+                        <polygon
+                          points={`${cBio.x},${cBio.y} ${cChem.x},${cChem.y} ${cPhys.x},${cPhys.y} ${cDil.x},${cDil.y}`}
+                          fill="none"
+                          stroke="#94a3b8"
+                          strokeWidth="1.5"
+                          strokeDasharray="4 4"
+                          className="opacity-50"
+                        />
+                      );
+                    })()}
+
+                    {/* Student Performance Polygon (Filled gradient, glowing outline) */}
+                    {(() => {
+                      const bioVal = Math.max(0.1, scores.Biology / 100);
+                      const chemVal = Math.max(0.1, scores.Chemistry / 100);
+                      const physVal = Math.max(0.1, scores.Physics / 100);
+                      const dilVal = Math.max(0.1, scores.Diligence / 100);
+
+                      const pBio = { x: 160, y: 160 - 100 * bioVal };
+                      const pChem = { x: 160 + 100 * chemVal, y: 160 };
+                      const pPhys = { x: 160, y: 160 + 100 * physVal };
+                      const pDil = { x: 160 - 100 * dilVal, y: 160 };
+
+                      const pointsStr = `${pBio.x},${pBio.y} ${pChem.x},${pChem.y} ${pPhys.x},${pPhys.y} ${pDil.x},${pDil.y}`;
+                      return (
+                        <>
+                          {/* Inner glowing polygon */}
+                          <polygon
+                            points={pointsStr}
+                            fill="url(#radarGlow)"
+                            stroke="#6366f1"
+                            strokeWidth="2.5"
+                          />
+                          {/* Interactive glowing corner dots */}
+                          <circle cx={pBio.x} cy={pBio.y} r="4" fill="#4f46e5" stroke="#fff" strokeWidth="1.5" />
+                          <circle cx={pChem.x} cy={pChem.y} r="4" fill="#4f46e5" stroke="#fff" strokeWidth="1.5" />
+                          <circle cx={pPhys.x} cy={pPhys.y} r="4" fill="#4f46e5" stroke="#fff" strokeWidth="1.5" />
+                          <circle cx={pDil.x} cy={pDil.y} r="4" fill="#4f46e5" stroke="#fff" strokeWidth="1.5" />
+                        </>
+                      );
+                    })()}
+                  </svg>
+                </div>
+              </div>
+
+              {/* Dynamic Suggested Focus Section */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-2 flex items-center gap-2">
+                  🎯 Suggested Focus Areas
+                </h3>
+                <p className="text-slate-400 text-xs font-medium mb-6">
+                  Recommended science exercises to target your lower quiz averages.
+                </p>
+
+                {suggestedFocus.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {suggestedFocus.map((exp) => (
+                      <Link
+                        key={exp.id}
+                        to={exp.link}
+                        className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-900/10 hover:border-violet-500 dark:hover:border-violet-500/80 transition-all duration-200 hover:scale-[1.02] flex flex-col justify-between"
+                      >
+                        <div>
+                          <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                            exp.subject === "Biology"
+                              ? "bg-green-500/10 border-green-500/10 text-green-500"
+                              : exp.subject === "Chemistry"
+                              ? "bg-blue-500/10 border-blue-500/10 text-blue-500"
+                              : "bg-amber-500/10 border-amber-500/10 text-amber-500"
+                          }`}>
+                            {exp.subject}
+                          </span>
+                          <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200 mt-3.5 leading-snug">
+                            {exp.title}
+                          </h4>
                         </div>
-                      ) : (
-                        <div className="text-[10px] text-violet-500 dark:text-violet-400 font-bold hover:underline">
-                          Start →
+                        <div className="mt-4 flex items-center justify-between border-t border-slate-200/60 dark:border-slate-800/60 pt-3">
+                          <span className="text-[9px] font-black text-rose-500 dark:text-rose-400">
+                            {exp.reason}
+                          </span>
+                          <span className="text-[10px] font-bold text-violet-500 dark:text-violet-400">
+                            Launch →
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/30 dark:bg-slate-950/20">
+                    <span className="text-3xl block">🏆</span>
+                    <p className="font-bold text-xs text-emerald-500 dark:text-emerald-400 mt-2">All Science Lab Experiments Completed Perfectly!</p>
+                    <p className="text-[10px] text-slate-400 mt-1">Excellent work researcher, you are at maximum accuracy.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* QUIZ SCORE TRENDS TIMELINE (1/3 width) */}
+            <div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 h-full">
+                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-2 flex items-center gap-2">
+                  📈 Quiz score trends
+                </h3>
+                <p className="text-slate-400 text-xs font-medium mb-6">
+                  Chronological progression timeline of your scores.
+                </p>
+
+                {Object.keys(completedQuizzes).length > 0 ? (
+                  <div className="relative pl-4 border-l border-slate-200 dark:border-slate-800 flex flex-col gap-6 max-h-[460px] overflow-y-auto pr-1">
+                    {Object.entries(completedQuizzes).map(([expId, score]) => {
+                      const exp = EXPERIMENTS_ROADMAP.find(e => e.id === expId);
+                      return (
+                        <div key={expId} className="relative group text-left">
+                          {/* Chronological bullet marker node */}
+                          <span className={`absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full border border-white dark:border-slate-900 shadow-md ${
+                            score === 5
+                              ? "bg-emerald-500 shadow-emerald-500/20 animate-pulse"
+                              : "bg-amber-500 shadow-amber-500/20"
+                          }`} />
+
+                          <div>
+                            <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200">
+                              {exp ? exp.title : expId}
+                            </h4>
+                            <div className="flex justify-between items-center mt-2.5">
+                              <span className="text-[8px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">
+                                {exp ? exp.subject : "Science"}
+                              </span>
+                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                                score === 5
+                                  ? "bg-emerald-500/10 text-emerald-500"
+                                  : "bg-amber-500/10 text-amber-500"
+                              }`}>
+                                {score}/5 ⭐
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/30 dark:bg-slate-950/20">
+                    <span className="text-3xl block">📈</span>
+                    <p className="font-bold text-xs text-slate-400 mt-3">No Quiz Attempts Recorded Yet</p>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-4 leading-relaxed">
+                      Complete post-experiment quizzes in your roadmap checklist to build your learning trend!
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-
-      </div>
+      )}
     </div>
   );
 };
