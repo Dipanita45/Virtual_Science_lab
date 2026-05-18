@@ -89,58 +89,120 @@ const Quiz = ({ experimentId, subject }) => {
             exit={{ opacity: 0, y: -15 }}
             className="text-center py-4"
           >
-            {/* Pulsing visual icon ring */}
-            <div className="relative w-16 h-16 mx-auto mb-6 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/30">
-              <div className="absolute inset-0.5 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center">
-                <span className="text-3xl animate-bounce">🎓</span>
-              </div>
-            </div>
+            {experimentId === "weekly-challenge" ? (
+              <>
+                {/* Weekly Challenge — special icon ring */}
+                <div className="relative w-20 h-20 mx-auto mb-6 bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-xl shadow-cyan-500/30">
+                  <div className="absolute inset-1 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center">
+                    <span className="text-4xl">💡</span>
+                  </div>
+                  {/* Animated outer ring pulse */}
+                  <div className="absolute -inset-1 rounded-full border-2 border-cyan-400/40 animate-ping" />
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40 mb-4">
+                  Available Mondays Only
+                </div>
 
-            <h3 className="text-2xl font-black tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
-              Test Your Understanding!
-            </h3>
-            
-            <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto text-xs font-semibold leading-relaxed">
-              Complete a quick {questions.length}-question conceptual quiz on this experiment to demonstrate your mastery, earn experience points, and unlock achievements!
-            </p>
+                <h3 className="text-2xl font-black tracking-tight bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-cyan-400 dark:via-blue-400 dark:to-purple-400">
+                  Weekly Challenge
+                </h3>
 
-            {/* Gamification Rewards Panel */}
-            <div className="flex flex-wrap justify-center gap-3 my-6">
-              {previousHighScore === -1 ? (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  ⚡ +100 XP Max Reward
-                </div>
-              ) : previousHighScore < questions.length ? (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  ⚡ +{(questions.length - previousHighScore) * 10} XP Improvement
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20">
-                  ⚡ Practice Mode (+0 XP)
-                </div>
-              )}
-              
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                🏆 Subject Badge
-              </div>
-              
-              {previousHighScore !== -1 && (
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black border ${
-                  previousHighScore === questions.length
-                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                    : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-                }`}>
-                  ⭐ Record: {previousHighScore}/{questions.length}
-                </div>
-              )}
-            </div>
+                <p className="text-slate-500 dark:text-slate-400 mt-3 max-w-sm mx-auto text-xs font-semibold leading-relaxed">
+                  A special quiz that drops every <strong className="text-slate-700 dark:text-slate-200">Monday</strong> - covering Biology, Chemistry & Physics. Score <strong className="text-slate-700 dark:text-slate-200">4 or more</strong> to unlock the exclusive <strong className="text-cyan-600 dark:text-cyan-400"> Explorer Badge</strong>!
+                </p>
 
-            <button
-              onClick={handleStart}
-              className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-extrabold text-xs tracking-wider uppercase transition-all duration-300 hover:scale-105 active:scale-98 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30"
-            >
-              {previousHighScore === -1 ? "Challenge Quiz →" : "Re-attempt Quiz 🔄"}
-            </button>
+                {/* Weekly Challenge Reward Panel */}
+                <div className="flex flex-wrap justify-center gap-3 my-6">
+                  {previousHighScore === -1 ? (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                      ⚡ +150 XP First Attempt Bonus
+                    </div>
+                  ) : previousHighScore < questions.length ? (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                      ⚡ +{(questions.length - previousHighScore) * 10} XP Improvement
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20">
+                      ⚡ Practice Mode
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
+                     Explorer Badge (score 4+/5)
+                  </div>
+
+                  {previousHighScore !== -1 && (
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black border ${previousHighScore >= 4
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                        : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                      }`}>
+                      ⭐ Best: {previousHighScore}/{questions.length} {previousHighScore >= 4 ? "🏅" : ""}
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleStart}
+                  className="px-8 py-3 rounded-full bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-extrabold text-xs tracking-wider uppercase transition-all duration-300 hover:scale-105 active:scale-98 shadow-md shadow-cyan-500/20 hover:shadow-lg hover:shadow-cyan-500/30"
+                >
+                  {previousHighScore === -1 ? "Accept the Challenge" : "Re-attempt Challenge 🔄"}
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Regular experiment quiz — original design */}
+                <div className="relative w-16 h-16 mx-auto mb-6 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/30">
+                  <div className="absolute inset-0.5 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center">
+                    <span className="text-3xl animate-bounce">🎓</span>
+                  </div>
+                </div>
+
+                <h3 className="text-2xl font-black tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
+                  Test Your Understanding!
+                </h3>
+
+                <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto text-xs font-semibold leading-relaxed">
+                  Complete a quick {questions.length}-question conceptual quiz on this experiment to test your learning, earn experience points, and unlock badges!
+                </p>
+
+                {/* Gamification Rewards Panel */}
+                <div className="flex flex-wrap justify-center gap-3 my-6">
+                  {previousHighScore === -1 ? (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                      ⚡ +100 XP Max Reward
+                    </div>
+                  ) : previousHighScore < questions.length ? (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                      ⚡ +{(questions.length - previousHighScore) * 10} XP Improvement
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20">
+                      ⚡ Practice Mode (+0 XP)
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                    🏆 Subject Badge
+                  </div>
+
+                  {previousHighScore !== -1 && (
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black border ${previousHighScore === questions.length
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                        : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                      }`}>
+                      ⭐ Record: {previousHighScore}/{questions.length}
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleStart}
+                  className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-extrabold text-xs tracking-wider uppercase transition-all duration-300 hover:scale-105 active:scale-98 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30"
+                >
+                  {previousHighScore === -1 ? "Challenge Quiz →" : "Re-attempt Quiz 🔄"}
+                </button>
+              </>
+            )}
           </motion.div>
         ) : !quizFinished ? (
           <motion.div
@@ -211,7 +273,7 @@ const Quiz = ({ experimentId, subject }) => {
             className="text-center py-4"
           >
             <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100">Quiz Completed!</h3>
-            
+
             <div className="my-6">
               <span className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">
                 {correctAnswers} / {questions.length}
@@ -220,8 +282,8 @@ const Quiz = ({ experimentId, subject }) => {
                 {correctAnswers === questions.length
                   ? "Perfect Score! 🌟"
                   : correctAnswers >= Math.ceil(questions.length / 2)
-                  ? "Great job! 👍"
-                  : "Keep studying! 📚"}
+                    ? "Great job! 👍"
+                    : "Keep studying! 📚"}
               </p>
             </div>
 

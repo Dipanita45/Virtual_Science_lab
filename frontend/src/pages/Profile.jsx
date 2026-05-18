@@ -59,6 +59,14 @@ const BADGES_CONFIG = [
     emoji: "🏆",
     subject: "All",
     color: "from-yellow-400 via-amber-500 to-yellow-600 shadow-yellow-500/30 text-yellow-50 font-black animate-pulse"
+  },
+  {
+    id: "Explorer",
+    title: "Explorer",
+    description: "Complete a Weekly 'Monday' Challenge with a score of 4/5 or better!",
+    emoji: "💡",
+    subject: "Challenge",
+    color: "from-cyan-400 to-blue-500 shadow-cyan-500/20 text-cyan-100 font-extrabold"
   }
 ];
 
@@ -177,18 +185,45 @@ const Profile = () => {
     (scores.Biology + scores.Chemistry + scores.Physics) / 3
   );
 
-  // Determine Strongest and Weakest subjects
+  // Determine Strongest and Weakest subjects (handling ties beautifully)
   const subjectsList = [
     { name: "Biology", score: scores.Biology, count: subjectAnalytics.counts.Biology },
     { name: "Chemistry", score: scores.Chemistry, count: subjectAnalytics.counts.Chemistry },
     { name: "Physics", score: scores.Physics, count: subjectAnalytics.counts.Physics }
   ];
 
-  // Sort: highest score first
-  subjectsList.sort((a, b) => b.score - a.score || b.count - a.count);
+  const attemptedSubjects = subjectsList.filter(s => s.count > 0);
+  
+  let strongestDisplay = { name: "None", score: 0 };
+  let weakestDisplay = { name: "None", score: 0 };
+  
+  if (attemptedSubjects.length > 0) {
+    const maxScore = Math.max(...attemptedSubjects.map(s => s.score));
+    const strongestList = attemptedSubjects.filter(s => s.score === maxScore);
+    strongestDisplay = {
+      name: strongestList.map(s => s.name).join(" & "),
+      score: maxScore
+    };
+    
+    const minScore = Math.min(...attemptedSubjects.map(s => s.score));
+    const weakestList = attemptedSubjects.filter(s => s.score === minScore);
+    
+    if (minScore === 100) {
+      weakestDisplay = {
+        name: "None (All Perfect!)",
+        score: 100
+      };
+    } else {
+      weakestDisplay = {
+        name: weakestList.map(s => s.name).join(" & "),
+        score: minScore
+      };
+    }
+  }
 
-  const strongestSubject = subjectsList[0];
-  const weakestSubject = subjectsList[subjectsList.length - 1];
+  // Fallbacks for backward compatibility in other methods
+  const strongestSubject = attemptedSubjects.length > 0 ? [...subjectsList].sort((a,b) => b.score - a.score)[0] : { name: "None", score: 0, count: 0 };
+  const weakestSubject = attemptedSubjects.length > 0 ? [...subjectsList].sort((a,b) => a.score - b.score)[0] : { name: "None", score: 0, count: 0 };
 
   // Dynamic Suggested Experiments (only showing attempted quizzes that need score improvement)
   const getSuggestions = () => {
@@ -276,7 +311,7 @@ const Profile = () => {
               : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-400"
           }`}
         >
-          🏆 Achievements & Badges
+          Achievements & Badges 🏆
           {activeTab === "achievements" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse" />
           )}
@@ -289,7 +324,7 @@ const Profile = () => {
               : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-400"
           }`}
         >
-          📊 Performance Analytics
+          Performance Analytics
           <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[8px] px-1.5 py-0.5 rounded font-black uppercase animate-pulse">
             New
           </span>
@@ -461,11 +496,11 @@ const Profile = () => {
               <p className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
                 Strongest subject
               </p>
-              <h4 className="text-3xl font-black mt-2 text-emerald-600 dark:text-emerald-400 flex items-baseline gap-2">
-                {strongestSubject.score === 0 ? "N/A" : strongestSubject.name}
-                {strongestSubject.score > 0 && (
+              <h4 className="text-3xl font-black mt-2 text-emerald-600 dark:text-emerald-400 flex items-baseline gap-2 flex-wrap">
+                {strongestDisplay.name === "None" ? "N/A" : strongestDisplay.name}
+                {strongestDisplay.score > 0 && (
                   <span className="text-xs font-black text-emerald-500/80 uppercase">
-                    {strongestSubject.score}/100
+                    {strongestDisplay.score}/100
                   </span>
                 )}
               </h4>
@@ -479,11 +514,11 @@ const Profile = () => {
               <p className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
                 Needs work
               </p>
-              <h4 className="text-3xl font-black mt-2 text-amber-600 dark:text-amber-400 flex items-baseline gap-2">
-                {weakestSubject.score === 0 ? "All Subjects" : weakestSubject.name}
-                {weakestSubject.score > 0 && (
+              <h4 className="text-3xl font-black mt-2 text-amber-600 dark:text-amber-400 flex items-baseline gap-2 flex-wrap">
+                {weakestDisplay.name === "None" ? "All Subjects" : weakestDisplay.name}
+                {weakestDisplay.score > 0 && weakestDisplay.name !== "None (All Perfect!)" && (
                   <span className="text-xs font-black text-amber-500/80 uppercase">
-                    {weakestSubject.score}/100
+                    {weakestDisplay.score}/100
                   </span>
                 )}
               </h4>
@@ -513,10 +548,6 @@ const Profile = () => {
                     <div className="flex items-center gap-1.5 text-indigo-500">
                       <span className="inline-block w-2.5 h-2.5 rounded bg-indigo-500" />
                       This Student
-                    </div>
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                      <span className="inline-block w-2.5 h-2.5 rounded border border-dashed border-slate-400 dark:border-slate-600" />
-                      Class Average
                     </div>
                   </div>
                 </div>
@@ -568,23 +599,7 @@ const Profile = () => {
                     <text x="160" y="278" textAnchor="middle" className="font-extrabold text-[10px] fill-slate-700 dark:fill-slate-200">Physics</text>
                     <text x="52" y="163" textAnchor="end" className="font-extrabold text-[10px] fill-slate-700 dark:fill-slate-200">Lab Skills</text>
 
-                    {/* Class Benchmark Polygon (Dashed gray outline) */}
-                    {(() => {
-                      const cBio = { x: 160, y: 160 - 100 * 0.75 };
-                      const cChem = { x: 160 + 100 * 0.70, y: 160 };
-                      const cPhys = { x: 160, y: 160 + 100 * 0.60 };
-                      const cDil = { x: 160 - 100 * 0.50, y: 160 };
-                      return (
-                        <polygon
-                          points={`${cBio.x},${cBio.y} ${cChem.x},${cChem.y} ${cPhys.x},${cPhys.y} ${cDil.x},${cDil.y}`}
-                          fill="none"
-                          stroke="#94a3b8"
-                          strokeWidth="1.5"
-                          strokeDasharray="4 4"
-                          className="opacity-50"
-                        />
-                      );
-                    })()}
+
 
                     {/* Student Performance Polygon (Filled gradient, glowing outline) */}
                     {(() => {
@@ -683,13 +698,16 @@ const Profile = () => {
                 </p>
 
                 {Object.keys(completedQuizzes).length > 0 ? (
-                  <div className="relative pl-4 border-l border-slate-200 dark:border-slate-800 flex flex-col gap-6 max-h-[460px] overflow-y-auto py-1.5 pr-1">
+                  <div className="relative flex flex-col gap-6 max-h-[460px] overflow-y-auto py-1.5 pr-1">
+                    {/* Chronological vertical line tracker */}
+                    <div className="absolute left-[15px] top-2 bottom-2 w-[2px] bg-slate-200 dark:bg-slate-800" />
+
                     {Object.entries(completedQuizzes).map(([expId, score]) => {
                       const exp = EXPERIMENTS_ROADMAP.find(e => e.id === expId);
                       return (
-                        <div key={expId} className="relative group text-left">
+                        <div key={expId} className="relative pl-7 text-left group">
                           {/* Chronological bullet marker node */}
-                          <span className={`absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full border border-white dark:border-slate-900 shadow-md ${
+                          <span className={`absolute left-[11px] top-[5px] w-2.5 h-2.5 rounded-full border border-white dark:border-slate-900 shadow-md ${
                             score === 5
                               ? "bg-emerald-500 shadow-emerald-500/20 animate-pulse"
                               : "bg-amber-500 shadow-amber-500/20"

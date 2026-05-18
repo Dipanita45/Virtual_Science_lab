@@ -99,8 +99,11 @@ def complete_quiz(user_id: str, experiment_id: str, score: int, total_questions:
     new_score_recorded = False
     
     if previous_score == -1:
-        # First attempt! Give 50 XP flat + 10 XP per correct question
-        xp_earned += 50
+        # First attempt! Give XP flat + 10 XP per correct question
+        if experiment_id == "weekly-challenge":
+            xp_earned += 150 # Special weekly completion bonus!
+        else:
+            xp_earned += 50
         xp_earned += score * 10
         completed_quizzes[experiment_id] = score
         new_score_recorded = True
@@ -124,7 +127,8 @@ def complete_quiz(user_id: str, experiment_id: str, score: int, total_questions:
         {"id": "Chemistry Pro", "subject": "chemistry", "threshold": 3, "type": "all_perfect"},
         {"id": "Junior Physicist", "subject": "physics", "threshold": 1, "type": "any_perfect"},
         {"id": "Physics Pro", "subject": "physics", "threshold": 4, "type": "all_perfect"},
-        {"id": "Science Champion", "subject": "all", "threshold": 11, "type": "grand_perfect"}
+        {"id": "Science Champion", "subject": "all", "threshold": 11, "type": "grand_perfect"},
+        {"id": "Explorer", "subject": "weekly", "threshold": 1, "type": "weekly_perfect"}
     ]
     
     for badge in badge_definitions:
@@ -159,6 +163,10 @@ def complete_quiz(user_id: str, experiment_id: str, score: int, total_questions:
                     grand_perfect = False
                     break
             if grand_perfect:
+                unlocked = True
+        elif badge["type"] == "weekly_perfect":
+            # Check if weekly challenge score is 4 or 5
+            if completed_quizzes.get("weekly-challenge", 0) >= 4:
                 unlocked = True
                 
         if unlocked:

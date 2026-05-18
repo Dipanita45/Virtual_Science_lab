@@ -296,6 +296,33 @@
         "options": ["Voltmeter", "Thermometer", "Magnetic Compass", "Barometer"],
         "correct": 2
       }
+    ],
+    "weekly-challenge": [
+      {
+        "question": "What biological organelle is responsible for cellular respiration, often called the powerhouse of the cell?",
+        "options": ["Nucleus", "Mitochondria", "Ribosome", "Golgi Apparatus"],
+        "correct": 1
+      },
+      {
+        "question": "In chemistry, which of the following pH values represents a highly acidic solution?",
+        "options": ["pH 2", "pH 7", "pH 12", "pH 9"],
+        "correct": 0
+      },
+      {
+        "question": "According to the Right-Hand Thumb Rule in physics, if the thumb points in the direction of current, what do the fingers represent?",
+        "options": ["Direction of force", "Direction of magnetic field", "Direction of voltage", "Direction of electric field"],
+        "correct": 1
+      },
+      {
+        "question": "What is the primary green pigment in plants that absorbs light during photosynthesis?",
+        "options": ["Carotenoid", "Chlorophyll", "Anthocyanin", "Xanthophyll"],
+        "correct": 1
+      },
+      {
+        "question": "Which subatomic particle carries a negative electrical charge?",
+        "options": ["Proton", "Neutron", "Electron", "Positron"],
+        "correct": 2
+      }
     ]
   }
 }
