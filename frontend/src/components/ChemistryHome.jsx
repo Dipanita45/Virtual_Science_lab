@@ -1,5 +1,5 @@
-import ExperimentCard from "./ExperimentCard";
 import { EXPERIMENT_CATALOG } from "../data/experiments";
+import SubjectDashboard from "./SubjectDashboard";
 
 const ChemistryHome = () => {
   const chemistryExperiments = EXPERIMENT_CATALOG.filter(
@@ -7,31 +7,20 @@ const ChemistryHome = () => {
   );
 
   return (
-    <div>
-      <h1>Chemistry Virtual Lab</h1>
-      <p>Explore interactive chemistry experiments</p>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-          gap: "20px",
-          marginTop: "20px",
-        }}
-      >
-        {chemistryExperiments.map((exp) => (
-          <ExperimentCard
-            key={exp.id}
-            id={exp.id}
-            title={exp.title}
-            description={exp.description}
-            subject={exp.subject}
-            link={exp.link}
-            difficulty={exp.difficulty}
-          />
-        ))}
-      </div>
-    </div>
+    <SubjectDashboard 
+      subject="chemistry"
+      title="Chemistry Virtual Lab"
+      description="Mix chemicals, observe reactions, and learn about molecular structures in a completely safe, state-of-the-art virtual environment."
+      experiments={chemistryExperiments}
+      colorTheme={{
+        bg: "bg-emerald-500",
+        text: "text-emerald-500",
+        border: "border-emerald-500/20",
+        hoverBorder: "hover:border-emerald-500/50",
+        gradientLight: "from-emerald-50 to-teal-50",
+        gradientDark: "from-emerald-950/40 to-teal-950/40"
+      }}
+    />
   );
 };
 
