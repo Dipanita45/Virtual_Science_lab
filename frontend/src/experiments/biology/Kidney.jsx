@@ -5,6 +5,16 @@ import ExperimentChatbot from "../../components/ExperimentChatbot";
 
 const Kidney = () => {
   const experiment = biologyData.experiments.find((exp) => exp.id === "kidney");
+import Quiz from "../../components/Quiz";
+import ExperimentNotesPanel from "../../components/ExperimentNotesPanel";
+
+import SimulationViewer from "../../components/SimulationViewer";
+
+const Kidney = () => {
+
+  const experiment = biologyData.experiments.find(
+    (exp) => exp.id === "kidney"
+  );
 
   if (!experiment) return <p>Experiment not found</p>;
 
@@ -33,6 +43,11 @@ const Kidney = () => {
           }}
         />
       </div>
+      <SimulationViewer
+        title={experiment.title}
+        src={`${experiment.modelUrl}?ui_infos=0&ui_controls=0&ui_stop=0&ui_help=0`}
+      />
+
 
       <InstructionPanel
         aim={experiment.aim}
@@ -44,8 +59,13 @@ const Kidney = () => {
       />
 
       <ExperimentChatbot experiment={experiment} subject="biology" />
+      <Quiz experimentId="kidney" subject="biology" />
+      <div style={{ marginTop: "24px" }}>
+        <ExperimentNotesPanel experimentId="kidney" />
+      </div>
     </div>
   );
 };
 
 export default Kidney;
+

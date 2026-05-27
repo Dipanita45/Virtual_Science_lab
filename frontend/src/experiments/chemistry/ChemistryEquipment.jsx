@@ -5,6 +5,16 @@ import ExperimentChatbot from "../../components/ExperimentChatbot";
 
 const ChemistryEquipment = () => {
   const experiment = chemistryData.experiments.find((exp) => exp.id === "chemistry-equipment");
+import Quiz from "../../components/Quiz";
+import ExperimentNotesPanel from "../../components/ExperimentNotesPanel";
+
+import SimulationViewer from "../../components/SimulationViewer";
+
+const ChemistryEquipment = () => {
+
+  const experiment = chemistryData.experiments.find(
+    (exp) => exp.id === "chemistry-equipment"
+  );
 
   if (!experiment) return <p>Experiment not found</p>;
 
@@ -33,6 +43,10 @@ const ChemistryEquipment = () => {
           }}
         />
       </div>
+      <SimulationViewer
+        title={experiment.title}
+        src={`${experiment.modelUrl}?ui_infos=0&ui_controls=0&ui_stop=0&ui_help=0`}
+      />
 
       <InstructionPanel
         aim={experiment.aim}
@@ -44,6 +58,10 @@ const ChemistryEquipment = () => {
       />
 
       <ExperimentChatbot experiment={experiment} subject="chemistry" />
+      <Quiz experimentId="chemistry-equipment" subject="chemistry" />
+      <div style={{ marginTop: "24px" }}>
+        <ExperimentNotesPanel experimentId="chemistry-equipment" />
+      </div>
     </div>
   );
 };

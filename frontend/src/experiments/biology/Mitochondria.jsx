@@ -5,6 +5,16 @@ import ExperimentChatbot from "../../components/ExperimentChatbot";
 
 const Mitochondria = () => {
   const experiment = biologyData.experiments.find((exp) => exp.id === "mitochondria");
+import Quiz from "../../components/Quiz";
+import ExperimentNotesPanel from "../../components/ExperimentNotesPanel";
+
+import SimulationViewer from "../../components/SimulationViewer";
+
+const Mitochondria = () => {
+
+  const experiment = biologyData.experiments.find(
+    (exp) => exp.id === "mitochondria"
+  );
 
   if (!experiment) return <p>Experiment not found</p>;
 
@@ -33,6 +43,11 @@ const Mitochondria = () => {
           }}
         />
       </div>
+      <SimulationViewer
+        title={experiment.title}
+        src={`${experiment.modelUrl}?ui_infos=0&ui_controls=0&ui_stop=0&ui_help=0`}
+      />
+
 
       <InstructionPanel
         aim={experiment.aim}
@@ -44,8 +59,13 @@ const Mitochondria = () => {
       />
 
       <ExperimentChatbot experiment={experiment} subject="biology" />
+      <Quiz experimentId="mitochondria" subject="biology" />
+      <div style={{ marginTop: "24px" }}>
+        <ExperimentNotesPanel experimentId="mitochondria" />
+      </div>
     </div>
   );
 };
 
 export default Mitochondria;
+

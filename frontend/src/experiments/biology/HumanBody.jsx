@@ -12,8 +12,13 @@ import biologyData from "../../data/biology.json";
 import InstructionPanel from "../../components/InstructionPanel";
 import BackButton from "../../components/BackButton";
 import ExperimentChatbot from "../../components/ExperimentChatbot"; // ← NEW
+import Quiz from "../../components/Quiz";
+import ExperimentNotesPanel from "../../components/ExperimentNotesPanel";
+
+import SimulationViewer from "../../components/SimulationViewer";
 
 const HumanBody = () => {
+
   const experiment = biologyData.experiments.find(
     (exp) => exp.id === "human-body"
   );
@@ -40,6 +45,10 @@ const HumanBody = () => {
           allowFullScreen
           style={{ borderRadius: "12px" }}
         />
+      <SimulationViewer
+        title={experiment.title}
+        src={`${experiment.modelUrl}?ui_infos=0&ui_controls=0&ui_stop=0&ui_help=0`}
+      />
 
         {/* TOP MASK – hides Sketchfab title bar */}
         <div
@@ -71,8 +80,15 @@ const HumanBody = () => {
 
       {/* ---- AI Chatbot ---- */}
       <ExperimentChatbot experiment={experiment} subject="biology" />  {/* ← NEW */}
+      <Quiz experimentId="human-body" subject="biology" />
+      <div style={{ marginTop: "24px" }}>
+        <ExperimentNotesPanel experimentId="human-body" />
+      </div>
     </div>
   );
 };
+
+
+
 
 export default HumanBody;

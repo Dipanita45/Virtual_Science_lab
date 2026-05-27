@@ -5,6 +5,16 @@ import ExperimentChatbot from "../../components/ExperimentChatbot";
 
 const MagneticFieldDirection = () => {
   const experiment = physicsData.experiments.find((exp) => exp.id === "magnetic-field-direction");
+import Quiz from "../../components/Quiz";
+import ExperimentNotesPanel from "../../components/ExperimentNotesPanel";
+
+import SimulationViewer from "../../components/SimulationViewer";
+
+const MagneticFieldDirection = () => {
+
+  const experiment = physicsData.experiments.find(
+    (exp) => exp.id === "magnetic-field-direction"
+  );
 
   if (!experiment) return <p>Experiment not found</p>;
 
@@ -33,6 +43,11 @@ const MagneticFieldDirection = () => {
           }}
         />
       </div>
+      <SimulationViewer
+        title={experiment.title}
+        src={`${experiment.modelUrl}?ui_infos=0&ui_controls=0&ui_stop=0&ui_help=0`}
+      />
+
 
       <InstructionPanel
         aim={experiment.aim}
@@ -44,6 +59,10 @@ const MagneticFieldDirection = () => {
       />
 
       <ExperimentChatbot experiment={experiment} subject="physics" />
+      <Quiz experimentId="magnetic-field-direction" subject="physics" />
+      <div style={{ marginTop: "24px" }}>
+        <ExperimentNotesPanel experimentId="magnetic-field-direction" />
+      </div>
     </div>
   );
 };

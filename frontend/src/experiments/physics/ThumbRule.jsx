@@ -5,6 +5,16 @@ import ExperimentChatbot from "../../components/ExperimentChatbot";
 
 const ThumbRule = () => {
   const experiment = physicsData.experiments.find((exp) => exp.id === "thumb-rule");
+import Quiz from "../../components/Quiz";
+import ExperimentNotesPanel from "../../components/ExperimentNotesPanel";
+
+import SimulationViewer from "../../components/SimulationViewer";
+
+const ThumbRule = () => {
+
+  const experiment = physicsData.experiments.find(
+    (exp) => exp.id === "thumb-rule"
+  );
 
   if (!experiment) return <p>Experiment not found</p>;
 
@@ -33,6 +43,11 @@ const ThumbRule = () => {
           }}
         />
       </div>
+      <SimulationViewer
+        title={experiment.title}
+        src={`${experiment.modelUrl}?ui_infos=0&ui_controls=0&ui_stop=0&ui_help=0`}
+      />
+
 
       <InstructionPanel
         aim={experiment.aim}
@@ -44,6 +59,10 @@ const ThumbRule = () => {
       />
 
       <ExperimentChatbot experiment={experiment} subject="physics" />
+      <Quiz experimentId="thumb-rule" subject="physics" />
+      <div style={{ marginTop: "24px" }}>
+        <ExperimentNotesPanel experimentId="thumb-rule" />
+      </div>
     </div>
   );
 };

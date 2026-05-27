@@ -5,6 +5,16 @@ import ExperimentChatbot from "../../components/ExperimentChatbot";
 
 const VolcanoExperiment = () => {
   const experiment = chemistryData.experiments.find((exp) => exp.id === "volcano-experiment");
+import Quiz from "../../components/Quiz";
+import ExperimentNotesPanel from "../../components/ExperimentNotesPanel";
+
+import SimulationViewer from "../../components/SimulationViewer";
+
+const VolcanoExperiment = () => {
+
+  const experiment = chemistryData.experiments.find(
+    (exp) => exp.id === "volcano-experiment"
+  );
 
   if (!experiment) return <p>Experiment not found</p>;
 
@@ -33,6 +43,11 @@ const VolcanoExperiment = () => {
           }}
         />
       </div>
+      <SimulationViewer
+        title={experiment.title}
+        src={`${experiment.modelUrl}?ui_infos=0&ui_controls=0&ui_stop=0&ui_help=0`}
+      />
+
 
       <InstructionPanel
         aim={experiment.aim}
@@ -44,6 +59,10 @@ const VolcanoExperiment = () => {
       />
 
       <ExperimentChatbot experiment={experiment} subject="chemistry" />
+      <Quiz experimentId="volcano-experiment" subject="chemistry" />
+      <div style={{ marginTop: "24px" }}>
+        <ExperimentNotesPanel experimentId="volcano-experiment" />
+      </div>
     </div>
   );
 };

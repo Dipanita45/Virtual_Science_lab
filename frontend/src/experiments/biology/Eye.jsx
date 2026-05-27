@@ -5,6 +5,17 @@ import ExperimentChatbot from "../../components/ExperimentChatbot";
 
 const Eye = () => {
   const experiment = biologyData.experiments.find((exp) => exp.id === "eye");
+import Quiz from "../../components/Quiz";
+import ExperimentNotesPanel from "../../components/ExperimentNotesPanel";
+
+import SimulationViewer from "../../components/SimulationViewer";
+
+const Eye = () => {
+
+  // Find eye experiment from JSON
+  const experiment = biologyData.experiments.find(
+    (exp) => exp.id === "eye"
+  );
 
   if (!experiment) return <p>Experiment not found</p>;
 
@@ -33,6 +44,11 @@ const Eye = () => {
           }}
         />
       </div>
+      {/* 3D Model */}
+      <SimulationViewer
+        title={experiment.title}
+        src={`${experiment.modelUrl}?ui_infos=0&ui_controls=0&ui_stop=0&ui_help=0`}
+      />
 
       <InstructionPanel
         aim={experiment.aim}
@@ -44,8 +60,13 @@ const Eye = () => {
       />
 
       <ExperimentChatbot experiment={experiment} subject="biology" />
+      <Quiz experimentId="eye" subject="biology" />
+      <div style={{ marginTop: "24px" }}>
+        <ExperimentNotesPanel experimentId="eye" />
+      </div>
     </div>
   );
 };
 
 export default Eye;
+
