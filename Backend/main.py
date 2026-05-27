@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
+from app.api.chatbot import router as chatbot_router   # ← NEW
 from app.api.gamification import router as gamification_router
 from app.api.progress import router as progress_router
 from app.api.notes import router as notes_router
@@ -26,6 +27,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+app.include_router(chatbot_router)   # ← NEW  (mounts at /api/chatbot/ask)
 app.include_router(gamification_router)
 app.include_router(progress_router)
 app.include_router(notes_router)
